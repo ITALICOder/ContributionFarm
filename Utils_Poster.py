@@ -1,13 +1,11 @@
-import os, random, datetime, schedule, time
-from github import Github
+import os, random, datetime, schedule, time, github
 
-folder_path = "path_to_folder" # PATH FOR 
-github_token = "your_github_token" # AUTH TOKEN
-files_list = [file for file in os.listdir(folder_path) if file.endswith((".py", ".bat"))]
+folder_path = "../Utils" # PATH FOR 
+github_token = "AUTHTOKEN" # AUTH TOKEN
 
 def upload_files():
     if len(files_list) > 0:
-        g = Github(github_token)
+        g = github.client(github_token)
         repo = g.get_user().get_repo('Utils') # REPO UTILS IN THIS CASE
         random_file = random.choice(files_list)
         nome = os.path.splitext(random_file)[0]
@@ -27,7 +25,7 @@ def upload_files():
             repo.create_file(f"files/{random_file}", f"Committing {random_file} on {datetime.datetime.now()}", contents)
         
             print(f"{random_file} caricato con successo su GitHub.")
-        os.remove(os.path.join(folder_path, random_file)
+        os.remove(os.path.join(folder_path, random_file))
     else:
         print("La cartella è vuota.")
 
@@ -37,9 +35,11 @@ def upload_job():
     with open("last_upload_time.txt", "w") as time_file:
         time_file.write(str(last_upload_time))
 
-# Eachday at 00.00
+# Imposta job di upload una volta al giorno alle 00:00
 schedule.every().day.at("00:00").do(upload_job)
 
 while True:
+    files_list = [file for file in os.listdir(folder_path) if file.endswith((".py", ".bat"))]
+    print(files_list)
     schedule.run_pending()
     time.sleep(1)
